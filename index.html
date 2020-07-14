@@ -27,7 +27,7 @@
       <tr>
         <td>
           <h2>SetVis</h2>
-          <h3>Conference Committees</h3>
+          <h3>Conference Committee Service 2020</h3>
         </td>
 
         <td id="logo"><a href="https://vis.ornl.gov/" target="_blank"><img src="img/vista-logo.png" height=70 alt="ORNL VISTA Vis Lab"></img></a></td>
@@ -67,48 +67,56 @@
       }
     }
 
-    d3.csv("data/CommitteeMemberList_2020.csv", d3.autoType)
+    d3.csv("data/devesh.csv", d3.autoType)
       .then(data => {
-        columnCategories = new Map();
-        data.columns.forEach(column => {
-          if (column !== 'Name') {
-            let conf = column.substring(0, column.indexOf(','));
-            console.log(conf);
-            let confColumns = columnCategories.get(conf);
-            if (!confColumns) {
-              confColumns = [];
-              columnCategories.set(conf, confColumns);
-            }
-            confColumns.push(column);
-          }
-        });
-        console.log(columnCategories);
-        console.log(columnCategories.keys());
-
-        chartData = [];
-        data.forEach(d => {
-          confRollups = new Map();
-          columnCategories.forEach((value, key) => {
-            let inConf = false;
-            value.forEach(v => {
-              if (d[v] === 1) {
-                inConf = true;
-              }
-            });
-            confRollups.set(key, inConf);
-            // console.log(`key: ${key}  value: ${value}`);
-          });
-          chartDatum = {Name: d.Name}
-          // console.log(confRollups);
-          confRollups.forEach((value, key) => {
-            chartDatum[key] = value;
-          })
-          chartData.push(chartDatum);
-        })
-        // chartData = data;
-        confNames = [...columnCategories.keys()];
+        console.log(data);
+        confNames = data.columns.filter(d => d !== 'Name' && d !== 'Year')
         console.log(confNames);
+        chartData = data.filter(d => d.Year === 2020);
         console.log(chartData);
+        // columnCategories = new Map();
+        // // data = data.filter(d => d.Year === 2020)
+        // // console.log(data);
+
+        // data.columns.forEach(column => {
+        //   if (column !== 'Name') {
+        //     let conf = column.substring(0, column.indexOf(','));
+        //     console.log(conf);
+        //     let confColumns = columnCategories.get(conf);
+        //     if (!confColumns) {
+        //       confColumns = [];
+        //       columnCategories.set(conf, confColumns);
+        //     }
+        //     confColumns.push(column);
+        //   }
+        // });
+        // console.log(columnCategories);
+        // console.log(columnCategories.keys());
+
+        // chartData = [];
+        // data.forEach(d => {
+        //   confRollups = new Map();
+        //   columnCategories.forEach((value, key) => {
+        //     let inConf = false;
+        //     value.forEach(v => {
+        //       if (d[v] === 1) {
+        //         inConf = true;
+        //       }
+        //     });
+        //     confRollups.set(key, inConf);
+        //     // console.log(`key: ${key}  value: ${value}`);
+        //   });
+        //   chartDatum = {Name: d.Name}
+        //   // console.log(confRollups);
+        //   confRollups.forEach((value, key) => {
+        //     chartDatum[key] = value;
+        //   })
+        //   chartData.push(chartDatum);
+        // })
+        // // chartData = data;
+        // confNames = [...columnCategories.keys()];
+        // console.log(confNames);
+        // console.log(chartData);
         createChart();
       })
       .catch(error => {

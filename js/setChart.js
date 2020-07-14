@@ -16,12 +16,12 @@ var setChart = function () {
         sets: setNames.map(s => {
           return {
             setName: s,
-            // inSet: d[s] === 0 ? false : true
             inSet: d[s]
           }
         })
       }
     });
+    
     chartData.sort((a,b) => {
       aCardinality = 0;
       a.sets.map(d => {
@@ -40,9 +40,17 @@ var setChart = function () {
       //   // bCardinality = bCardinality + b[n] ? 1 : 0;
       // });
       // console.log(a);
-      console.log(`${aCardinality} ${bCardinality}`)
+      // console.log(`${aCardinality} ${bCardinality}`)
+      // console.log(d3.keys(a.sets))
       if (aCardinality === bCardinality) {
-        return d3.ascending(a.name, b.name);
+        aFirstSetIdx = a.sets.findIndex(d => d.inSet);
+        bFirstSetIdx = b.sets.findIndex(d => d.inSet);
+        if (aFirstSetIdx === bFirstSetIdx) {
+          return d3.ascending(a.name, b.name);
+        } else {
+          return d3.ascending(aFirstSetIdx, bFirstSetIdx);
+        }
+        // return d3.ascending(a.name, b.name);
       } else {
         return d3.descending(aCardinality, bCardinality);
       }
@@ -52,6 +60,7 @@ var setChart = function () {
     chartDiv = selection;
     drawChart();
   }
+
 
   function drawChart() {
     if (chartDiv) {
