@@ -67,7 +67,7 @@
       }
     }
 
-    d3.csv("data/devesh.csv", d3.autoType)
+    d3.csv("data/confPC_v1.csv", d3.autoType)
       .then(data => {
         console.log(data);
         confNames = data.columns.filter(d => d !== 'Name' && d !== 'Year')
