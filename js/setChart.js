@@ -3,11 +3,72 @@ var setChart = function () {
   let width = 900 - margin.left - margin.right;
   let height = 400 - margin.top - margin.bottom;
   let boxSize = 14;
-
+  
+  let sortOption = 'Activeness';
   let nameValue = d => d.name;
   let setNames;
   let chartData;
+  let filteredData;
+  let nameFilterStrings = [];
   let chartDiv;
+
+  let orders = ({
+    Activeness: (a, b) => {
+      aCardinality = 0;
+      a.sets.map(d => {
+        d.inSet ? aCardinality++ : 0;
+      });
+
+      bCardinality = 0;
+      b.sets.map(d => {
+        d.inSet ? bCardinality++ : 0;
+      });
+
+      if (aCardinality === bCardinality) {
+        aFirstSetIdx = a.sets.findIndex(d => d.inSet);
+        bFirstSetIdx = b.sets.findIndex(d => d.inSet);
+        if (aFirstSetIdx === bFirstSetIdx) {
+          return d3.ascending(a.name, b.name);
+        } else {
+          return d3.ascending(aFirstSetIdx, bFirstSetIdx);
+        }
+      } else {
+        return d3.descending(aCardinality, bCardinality);
+      }
+    },
+    Set: (a, b) => {
+      aCardinality = 0;
+      a.sets.map(d => {
+        d.inSet ? aCardinality++ : 0;
+      });
+
+      bCardinality = 0;
+      b.sets.map(d => {
+        d.inSet ? bCardinality++ : 0;
+      });
+      aFirstSetIdx = a.sets.findIndex(d => d.inSet);
+      bFirstSetIdx = b.sets.findIndex(d => d.inSet);
+      if (aFirstSetIdx === bFirstSetIdx) {
+        if (aCardinality === bCardinality) {
+          return d3.ascending(a.name, b.name);
+        } else {
+          return d3.descending(aCardinality, bCardinality);
+        }
+      } else {
+        return d3.ascending(aFirstSetIdx, bFirstSetIdx);
+      }
+    },
+    Name: (a, b) => d3.ascending(a.name, b.name)
+  });
+
+  const isNameFiltered = (name) => {
+    for (let i = 0; i < nameFilterStrings.length; i++) {
+      if (name.toLowerCase().includes(nameFilterStrings[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   function chart(selection, data) {
     chartData = data.map(d => {
@@ -22,55 +83,49 @@ var setChart = function () {
       }
     });
     
-    chartData.sort((a,b) => {
-      aCardinality = 0;
-      a.sets.map(d => {
-        d.inSet ? aCardinality++ : 0;
-      });
+    chartData.sort(orders[sortOption]);
+    if (nameFilterStrings.length > 0) {
+      filteredData = chartData.filter(d => isNameFiltered(d.name));
+    } else {
+      filteredData = chartData;
+    }
+    // chartData.sort((a,b) => {
+    //   aCardinality = 0;
+    //   a.sets.map(d => {
+    //     d.inSet ? aCardinality++ : 0;
+    //   });
 
-      bCardinality = 0;
-      b.sets.map(d => {
-        d.inSet ? bCardinality++ : 0;
-      });
-      
-      // setNames.forEach(n => {
-      //   a[n] ? aCardinality++ : 0;
-      //   b[n] ? bCardinality++ : 0;
-      //   // aCardinality = aCardinality + (a[n] ? 1 : 0);
-      //   // bCardinality = bCardinality + b[n] ? 1 : 0;
-      // });
-      // console.log(a);
-      // console.log(`${aCardinality} ${bCardinality}`)
-      // console.log(d3.keys(a.sets))
-      if (aCardinality === bCardinality) {
-        aFirstSetIdx = a.sets.findIndex(d => d.inSet);
-        bFirstSetIdx = b.sets.findIndex(d => d.inSet);
-        if (aFirstSetIdx === bFirstSetIdx) {
-          return d3.ascending(a.name, b.name);
-        } else {
-          return d3.ascending(aFirstSetIdx, bFirstSetIdx);
-        }
-        // return d3.ascending(a.name, b.name);
-      } else {
-        return d3.descending(aCardinality, bCardinality);
-      }
-    });
-    // d3.ascending(a.name, b.name));
-    // chartData = data;
+    //   bCardinality = 0;
+    //   b.sets.map(d => {
+    //     d.inSet ? bCardinality++ : 0;
+    //   });
+
+    //   if (aCardinality === bCardinality) {
+    //     aFirstSetIdx = a.sets.findIndex(d => d.inSet);
+    //     bFirstSetIdx = b.sets.findIndex(d => d.inSet);
+    //     if (aFirstSetIdx === bFirstSetIdx) {
+    //       return d3.ascending(a.name, b.name);
+    //     } else {
+    //       return d3.ascending(aFirstSetIdx, bFirstSetIdx);
+    //     }
+    //   } else {
+    //     return d3.descending(aCardinality, bCardinality);
+    //   }
+    // });
+
     chartDiv = selection;
     drawChart();
   }
-
 
   function drawChart() {
     if (chartDiv) {
       chartDiv.selectAll('*').remove();
 
-      if (chartData) {
-        console.log(chartData);
+      if (filteredData) {
+        // console.log(filteredData);
 
         width = setNames.length * boxSize;
-        height = chartData.length * boxSize;
+        height = filteredData.length * boxSize;
 
         const svg = chartDiv.append('svg')
           .attr('width', width + margin.left + margin.right)
@@ -84,10 +139,10 @@ var setChart = function () {
           // .padding(1);        
         
         const y = d3.scaleBand()
-          .domain([...new Set(chartData.map(d => d.name))])
+          .domain([...new Set(filteredData.map(d => d.name))])
           .range([0, height]);
           // .padding(1);
-        console.log(y.domain());
+        // console.log(y.domain());
         
         const xAxis = g => g
           .call(d3.axisTop(x))
@@ -130,7 +185,7 @@ var setChart = function () {
 
         const row = g.append("g")
             .selectAll("g")
-          .data(chartData)
+          .data(filteredData)
           .join("g")
             .attr("transform", d => `translate(0, ${y(d.name)})`);
 
@@ -148,6 +203,51 @@ var setChart = function () {
 
       }
     }
+  }
+
+  chart.setNameFilterStrings = function(value) {
+    if (!arguments.length) {
+      return nameFilterStrings;
+    }
+
+    let strings = d3.csvParseRows(value)[0];
+    nameFilterStrings = [];
+    if (strings) {
+      strings.map(d => {
+        if (d.trim().length > 0) {
+          nameFilterStrings.push(d.trim().toLowerCase());
+        }
+      });
+    }
+    console.log(nameFilterStrings);
+
+    if (chartData) {
+      if (nameFilterStrings.length > 0) {
+        filteredData = chartData.filter(d => isNameFiltered(d.name));
+      } else {
+        filteredData = chartData;
+      }
+
+      drawChart();
+    }
+    return chart;
+  }
+
+  chart.sortOption = function(value) {
+    if (!arguments.length) {
+      return sortOption;
+    }
+    sortOption = value;
+    if (chartData) {
+      chartData.sort(orders[sortOption]);
+      if (nameFilterStrings.length > 0) {
+        filteredData = chartData.filter(d => isNameFiltered(d.name));
+      } else {
+        filteredData = chartData;
+      }
+      drawChart();
+    }
+    return chart;
   }
 
   chart.setNames = function(value) {
@@ -183,6 +283,7 @@ var setChart = function () {
       return boxSize;
     }
     boxSize = value;
+    drawChart();
     return chart;
   }
 

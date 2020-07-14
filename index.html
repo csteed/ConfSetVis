@@ -26,13 +26,37 @@
     <table>
       <tr>
         <td>
-          <h2>SetVis</h2>
-          <h3>Conference Committee Service 2020</h3>
+          <h2>Visual Analysis of Program Committee Service for Selected Conferences</h2>
+          <strong>Data:</strong> <a download href="data/confPC_v2.csv">confPC_v2.csv</a><br/><br/>
+
+          <strong>Author:</strong> <a href="https://csteed.com" target="_blank">Chad A. Steed</a>, <a href="https://vis.ornl.gov" target="_blank">VISTA Lab</a>, <a href="https://www.ornl.gov/division/csmd" target="_blank">Computer Science and Mathematics Division</a>, <a href="https://ornl.gov" target="_blank">Oak Ridge National Laboratory</a>
+          <br/>
+          <strong>Collaborators:</strong> Erik Schmidt (ORNL), Devesh Tiwari (Notheastern), Arthur "Barney" Maccabe (ORNL)
         </td>
 
         <td id="logo"><a href="https://vis.ornl.gov/" target="_blank"><img src="img/vista-logo.png" height=70 alt="ORNL VISTA Vis Lab"></img></a></td>
       </tr>
     </table>
+    <h3>Chart Controls:</h3>
+    <p>
+      <label for="yearSelect">Year: </label>
+      <select id="yearSelect" onChange="yearSelectChanged()"></select>
+      <br/><br/>
+
+      <label for="sortOptionSelect">Sorting Option: </label>
+      <select id="sortOptionSelect" onChange="sortOptionSelectChanged()">
+        <option selected>Activeness</option>
+        <option>Conference</option>
+        <option>Name</option>
+      </select>
+      <br/><br/>
+
+      <label for="searchTextField">Filter by Name: </label>
+      <input id="searchTextField" type="text"></input>
+      <label>(partial name search; use commas for multiple names)</label>
+      <br/><br/>
+    </p>
+
     <div id="chart"></div>
     <br/><br/>
     <center>
@@ -52,27 +76,108 @@
     let chart;
     let confNames;
 
+    const nameSearchTextInputHandler = () => {
+      if (chart) {
+        const textValue = document.getElementById('searchTextField').value;
+        chart.setNameFilterStrings(textValue);
+      }
+    };
+
+    document.getElementById('searchTextField').addEventListener('input', nameSearchTextInputHandler);
+
+    const populateYearSelect = () => {
+      const select = document.getElementById('yearSelect');
+      for (let i = select.options.length; i >= 0; i--) {
+        select.remove(i);
+      }
+      const years = [...new Set(chartData.map(d => d.Year))].sort(d3.descending);
+      // console.log(years);
+      select.options[0] = new Option('All Years');
+      years.map(d => {
+        select.options[select.options.length] = new Option(d);
+      });
+    };
+
+    const getSelectedYear = () => {
+      const select = document.getElementById('yearSelect');
+      return select.options[select.selectedIndex].text;
+    }
+
+    const yearSelectChanged = () => {
+      createChart();
+    };
+
+    const getSelectedSortOption = () => {
+      const select = document.getElementById('sortOptionSelect');
+      let option = select.options[select.selectedIndex].text;
+      return option === 'Conference' ? 'Set' : option;
+    }
+    
+    const sortOptionSelectChanged = () => {
+      // console.log('sort options CHANGED');
+      let sortOption = getSelectedSortOption();
+      // sortOption = sortOption === 'Conference' ? 'Set' : sortOption;
+      chart.sortOption(sortOption);
+    }
+
+    const loadData = () => {
+      let selectedYear = getSelectedYear();
+      // console.log(selectedYear);
+      let filteredData;
+      if (selectedYear === 'All Years') {
+        // merge names for multiple years into a single entry for each name
+        const names = [...new Set(chartData.map(d => d.Name))];
+        // console.log(names);
+        filteredData = names.map(name => {
+          nameItems = chartData.filter(d => d.Name === name);
+          if (nameItems > 1) {
+            let mergedItem = {
+              Name: name
+            };
+            confNames.map(confName => {
+              nameItems.map(item => {
+                mergedItem[confName] = mergedItem[confName] === 1 || name[Item] === 1 ? 1 : 0;
+              });
+            })
+            return mergedItem;
+          } else {
+            return nameItems[0];
+          }
+        });
+      } else {
+        // filter based on current selected year
+        selectedYear = +selectedYear;
+        filteredData = chartData.filter(d => d.Year === selectedYear);
+      }
+      // console.log(filteredData);
+      
+      return filteredData;
+    }
+
     const createChart = () => {
       if (chartData) {
+        data = loadData();
+        const selectedSortOption = getSelectedSortOption();
+        const nameFilterText = document.getElementById('searchTextField').value;
         const chartWidth = document.getElementById('chart').clientWidth;
         chart = setChart()
           .margin(chartMargin)
           .boxSize(20)
-          // .width(chartWidth)
-          // .height(400)
+          .sortOption(selectedSortOption)
           .nameValue(d => d.Name)
-          // .setNames(['Set1','Set2','Set3']);
+          .setNameFilterStrings(nameFilterText)
           .setNames(confNames);
-        d3.select('#chart').call(chart, chartData);
+        d3.select('#chart').call(chart, data);
       }
     }
 
     d3.csv("data/confPC_v2.csv", d3.autoType)
       .then(data => {
-        console.log(data);
+        // console.log(data);
         confNames = data.columns.filter(d => d !== 'Name' && d !== 'Year')
-        console.log(confNames);
-        chartData = data.filter(d => d.Year === 2020);
+        // console.log(confNames);
+        chartData = data;
+        // chartData = data.filter(d => d.Year === 2020);
         console.log(chartData);
         // columnCategories = new Map();
         // // data = data.filter(d => d.Year === 2020)
@@ -117,6 +222,7 @@
         // confNames = [...columnCategories.keys()];
         // console.log(confNames);
         // console.log(chartData);
+        populateYearSelect();
         createChart();
       })
       .catch(error => {
