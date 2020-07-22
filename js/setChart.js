@@ -227,6 +227,7 @@ var setChart = function () {
       } else {
         filteredData = chartData;
       }
+      console.log(filteredData);
 
       drawChart();
     }

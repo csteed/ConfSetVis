@@ -27,7 +27,7 @@
       <tr>
         <td>
           <h2>Visual Analysis of Program Committee Service for Selected Conferences</h2>
-          <strong>Data:</strong> <a download href="data/confPC_v2.csv">confPC_v2.csv</a><br/><br/>
+          <strong>Data:</strong> <a download href="data/confPC_v3.csv">confPC_v3.csv</a><br/><br/>
 
           <strong>Author:</strong> <a href="https://csteed.com" target="_blank">Chad A. Steed</a>, <a href="https://vis.ornl.gov" target="_blank">VISTA Lab</a>, <a href="https://www.ornl.gov/division/csmd" target="_blank">Computer Science and Mathematics Division</a>, <a href="https://ornl.gov" target="_blank">Oak Ridge National Laboratory</a>
           <br/>
@@ -130,15 +130,20 @@
         // console.log(names);
         filteredData = names.map(name => {
           nameItems = chartData.filter(d => d.Name === name);
-          if (nameItems > 1) {
+          if (name.search("Ethan") !== -1) { 
+            console.log(nameItems);
+            // console.log(mergedItem);
+          }
+          if (nameItems.length > 1) {
             let mergedItem = {
               Name: name
             };
             confNames.map(confName => {
               nameItems.map(item => {
-                mergedItem[confName] = mergedItem[confName] === 1 || name[Item] === 1 ? 1 : 0;
+                mergedItem[confName] = mergedItem[confName] === 1 || item[confName] === 1 ? 1 : 0;
               });
-            })
+            });
+            
             return mergedItem;
           } else {
             return nameItems[0];
@@ -171,7 +176,7 @@
       }
     }
 
-    d3.csv("data/confPC_v2.csv", d3.autoType)
+    d3.csv("data/confPC_v3.csv", d3.autoType)
       .then(data => {
         // console.log(data);
         confNames = data.columns.filter(d => d !== 'Name' && d !== 'Year')
