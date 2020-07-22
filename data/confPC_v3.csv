@@ -75,7 +75,9 @@ Michio Honda,2018,1,0,0,0,0
 Yu Hua,2020,1,1,0,0,0
 Yu Hua,2019,1,0,0,0,0
 Yu Hua,2018,1,0,0,0,0
-Jian  Huang,2020,1,0,0,0,0
+Jian Huang,2020,1,1,0,0,0
+Jian Huang,2019,1,0,0,0,1
+Jian Huang,2018,1,0,0,0,1
 Trent Jaeger,2020,1,0,0,0,0
 Bill Jannen,2020,1,1,0,0,0
 Bill Jannen,2019,1,1,0,0,0
@@ -154,7 +156,8 @@ Theodore Ts'o,2020,1,0,0,0,0
 Theodore Ts'o,2019,1,0,0,0,0
 Alexey Tumanov,2020,1,0,0,0,0
 Keval Vora,2020,1,0,0,0,0
-Ric  Wheeler,2020,1,0,0,0,0
+Ric Wheeler,2020,1,1,0,0,0
+Ric Wheeler,2019,1,1,0,0,0
 Avani Wildani,2020,1,1,0,0,0
 Emmett Witchel,2020,1,0,0,0,0
 Yue Yang,2020,1,0,0,0,0
@@ -208,9 +211,6 @@ Cristiano Giuffrida,2019,1,0,0,0,0
 Boris Grot,2019,1,0,0,0,0
 Steven Hand,2019,1,0,0,0,0
 Liting Hu,2019,1,0,0,0,0
-Jian Huang,2019,1,0,0,0,1
-Jian Huang,2018,1,0,0,0,1
-Jian Huang,2020,0,1,0,0,0
 Manos Kapritsos,2019,1,0,0,0,0
 Kimberly Keeton,2019,1,1,0,0,0
 Kimberly Keeton,2020,0,1,0,0,0
@@ -224,7 +224,7 @@ Dejan Kostic,2019,1,0,0,0,0
 Geoff Kuenning,2019,1,1,0,0,0
 Geoff Kuenning,2020,0,1,0,0,0
 Patrick P.C. Lee,2019,1,0,0,0,0
-Patrick P.C. Lee,2020,0,0,1,0,0
+Patrick P.C. Lee,2020,0,1,1,0,0
 Xing Lin,2019,1,0,0,0,0
 Xing Lin,2018,1,0,0,0,0
 Ethan L. Miller,2019,1,0,0,0,0
@@ -251,7 +251,7 @@ Bianca Schroeder,2019,1,1,0,0,0
 Bianca Schroeder,2018,0,1,0,0,0
 Liuba Shrira,2019,1,0,0,0,0
 Liuba Shrira,2018,0,0,1,0,0
-Keith A. Smith,2019,1,0,0,0,0
+Keith A. Smith,2019,1,1,0,0,0
 Keith A. Smith,2018,1,1,0,0,0
 Keith A. Smith,2020,0,1,0,0,0
 Michael Stumm,2019,1,0,0,0,0
@@ -266,8 +266,6 @@ Marko Vukolic,2019,1,0,0,0,0
 Marko Vukolic,2018,0,0,1,0,0
 Carl Waldspurger,2019,1,1,0,0,0
 Carl Waldspurger,2020,0,1,0,0,0
-Ric Wheeler,2019,1,1,0,0,0
-Ric Wheeler,2020,0,1,0,0,0
 Dan Williams,2019,1,0,0,0,0
 Youjip Won,2019,1,1,0,0,0
 Youjip Won,2018,1,1,0,0,0
@@ -299,7 +297,7 @@ Indranil Gupta,2018,1,0,0,0,0
 Dean Hildebrand,2018,1,1,0,1,0
 Dean Hildebrand,2020,0,1,0,1,0
 H. Howie Huang,2018,1,0,0,0,0
-H. Howie Huang,2020,0,1,0,0,0
+H. Howie Huang,2020,0,1,0,1,0
 Ryan Huang,2018,1,0,0,0,0
 David Irwin,2018,1,0,0,1,0
 David Irwin,2019,0,0,0,1,0
@@ -341,7 +339,6 @@ Haryadi Gunawi,2020,0,1,0,0,0
 Haryadi Gunawi,2019,0,1,0,0,0
 Haryadi Gunawi,2018,0,1,0,0,0
 Jooyoung Hwang,2020,0,1,0,0,0
-Patrick P. C. Lee,2020,0,1,0,0,0
 Sungjin Lee,2020,0,1,0,0,0
 Sungjin Lee,2019,0,1,0,0,0
 Darrell Long,2020,0,1,0,0,0
@@ -370,7 +367,6 @@ Onur Mutlu,2019,0,1,1,0,0
 Onur Mutlu,2020,0,0,1,0,0
 Florentina Popovici,2019,0,1,0,0,0
 Ken Salem,2019,0,1,0,0,0
-Keith A Smith,2019,0,1,0,0,0
 Ioan Stefanovici,2019,0,1,0,0,0
 Andrew Warfield,2019,0,1,0,0,0
 Andrew Warfield,2018,0,1,0,0,0
@@ -514,7 +510,8 @@ Fernando Dotti,2019,0,0,1,0,0
 Francois Taiani,2019,0,0,1,0,0
 Francois Taiani,2018,0,0,1,0,0
 Frolin Ocariza,2019,0,0,1,0,0
-Gabriela Jacques Da Silva,2019,0,0,1,0,0
+Gabriela Jacques da Silva,2019,0,0,1,0,0
+Gabriela Jacques da Silva,2018,0,0,1,0,0
 Haining Wang,2019,0,0,1,0,0
 Ilir Gashi,2019,0,0,1,0,0
 Ilir Gashi,2018,0,0,1,0,0
@@ -549,7 +546,6 @@ Arun Somani,2018,0,0,1,0,0
 Engin Kirda,2018,0,0,1,0,0
 Fabien Hermenier,2018,0,0,1,0,0
 Fumio Machida,2018,0,0,1,0,0
-Gabriela Jacques da Silva,2018,0,0,1,0,0
 Gernot Heiser,2018,0,0,1,0,0
 Hari Ramasamy,2018,0,0,1,0,0
 Hélène Waeselynck,2018,0,0,1,0,0
@@ -620,7 +616,6 @@ Kartik Gopalan,2020,0,0,0,1,0
 Kartik Gopalan,2019,0,0,0,1,0
 Kartik Gopalan,2018,0,0,0,1,0
 Tian Guo,2020,0,0,0,1,0
-H Howie Huang,2020,0,0,0,1,0
 Adriana Iamnitchi,2020,0,0,0,1,0
 Adriana Iamnitchi,2019,0,0,0,1,0
 Adriana Iamnitchi,2018,0,0,0,1,0
