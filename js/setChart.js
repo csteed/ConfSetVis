@@ -13,8 +13,9 @@ var setChart = function () {
   let filteredData;
   let nameFilterStrings = [];
   let chartDiv;
+
+  let setCountBarChartHeight = 60;
   let cardinalityBarChartWidth = 100;
-  let setCountBarChartHeight = 100;
 
   let orders = ({
     Activeness: (a, b) => {
@@ -163,7 +164,7 @@ var setChart = function () {
         const y = d3.scaleBand()
           // .domain([...new Set(filteredData.map(d => d.name))])
           .domain([...new Set(setPatterns.map(d => d.sets))])
-          .range([0, height]);
+          .range([setCountBarChartHeight, setCountBarChartHeight + height]);
         console.log(y.domain());
         
         const xAxis = g => g
@@ -260,6 +261,34 @@ var setChart = function () {
 
         // draw set population size bar chart below matrix chart
         const barY = d3.scaleLinear()
+          .range([setCountBarChartHeight - 8, 0])
+          .domain([0, d3.max(setCounts)])
+          .nice();
+          console.log(barY.domain());
+  
+        const setSizeYAxis = g => g
+          .call(d3.axisLeft(barY).ticks(setCountBarChartHeight/14))
+          .call(g => g.select(".domain").remove());
+        
+        g.append("g")
+          .attr("class", "axis axis-y")
+          .call(setSizeYAxis);
+
+        g.append('g')
+          .attr('fill', "deepskyblue")
+          .attr('stroke', 'none')
+          .selectAll('bin')
+          .data(setCounts)
+          .enter().append('rect')
+            .attr('x', (d,i) => x(setNames[i]))
+            .attr('y', d => barY(d))
+            // .attr('y', barY.range()[0])
+            .attr('width', x.bandwidth() - 2)
+            .attr('height', d => barY(0) - barY(d))
+            .append('title')
+              .text((d,i) => `${setNames[i]}\nn = ${d}`);
+        /*
+        const barY = d3.scaleLinear()
           .range([height + 10, height + setCountBarChartHeight])
           .domain([0, d3.max(setCounts)])
           .nice();
@@ -285,7 +314,7 @@ var setChart = function () {
             .attr('height', d => barY(d) - barY(0))
             .append('title')
               .text((d,i) => `${setNames[i]}\nn = ${d}`);
-
+        */
         // g.append('g')
         //     .attr('fill', "black")
         //     .attr('text-anchor', 'start')
