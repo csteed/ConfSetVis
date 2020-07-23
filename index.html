@@ -5,6 +5,7 @@
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://d3js.org/d3-array.v2.min.js"></script>
     <script src="js/setChart.js"></script>
+    <script src="js/barChart.js"></script>
 
     <style>
       body {
@@ -43,7 +44,7 @@
       <select id="yearSelect" onChange="yearSelectChanged()"></select>
       <br/><br/>
 
-      <label for="sortOptionSelect">Sorting Option: </label>
+      <!-- <label for="sortOptionSelect">Sorting Option: </label>
       <select id="sortOptionSelect" onChange="sortOptionSelectChanged()">
         <option selected>Activeness</option>
         <option>Conference</option>
@@ -54,9 +55,10 @@
       <label for="searchTextField">Filter by Name: </label>
       <input id="searchTextField" type="text"></input>
       <label>(partial name search; use commas for multiple names)</label>
-      <br/><br/>
+      <br/><br/> -->
     </p>
 
+    <!-- <div id="confchart"></div> -->
     <div id="chart"></div>
     <br/><br/>
     <center>
@@ -71,7 +73,7 @@
   </body>
 
   <script>
-    const chartMargin = {top:100, right:20, bottom:20, left:160};
+    const chartMargin = {top:100, right:20, bottom:20, left:40};
     let chartData;
     let chart;
     let confNames;
@@ -83,7 +85,7 @@
       }
     };
 
-    document.getElementById('searchTextField').addEventListener('input', nameSearchTextInputHandler);
+    // document.getElementById('searchTextField').addEventListener('input', nameSearchTextInputHandler);
 
     const populateYearSelect = () => {
       const select = document.getElementById('yearSelect');
@@ -162,15 +164,36 @@
     const createChart = () => {
       if (chartData) {
         data = loadData();
-        const selectedSortOption = getSelectedSortOption();
-        const nameFilterText = document.getElementById('searchTextField').value;
+        // const selectedSortOption = getSelectedSortOption();
+        // const nameFilterText = document.getElementById('searchTextField').value;
         const chartWidth = document.getElementById('chart').clientWidth;
+
+        // console.log(data);
+        // confChartData = [];
+        // confNames.map(confName => {
+        //   let confParticipants = data.filter(d => d[confName]);
+        //   confChartData.push({
+        //     conference: confName,
+        //     count: confParticipants.length
+        //   });
+        // });
+        // console.log(confChartData);
+
+        // let confChart = barChart()
+        //   .margin(chartMargin)
+        //   .width(chartWidth)
+        //   .height(confNames.length * 40)
+        //   .categoryValue(d => d.conference)
+        //   .barValue(d => d.count)
+        //   .categories(confNames);
+        // d3.select('#confchart').call(confChart, confChartData);
+
         chart = setChart()
           .margin(chartMargin)
           .boxSize(20)
-          .sortOption(selectedSortOption)
+          // .sortOption(selectedSortOption)
           .nameValue(d => d.Name)
-          .setNameFilterStrings(nameFilterText)
+          // .setNameFilterStrings(nameFilterText)
           .setNames(confNames);
         d3.select('#chart').call(chart, data);
       }
