@@ -4,8 +4,9 @@
   <head>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://d3js.org/d3-array.v2.min.js"></script>
-    <script src="js/setChart.js"></script>
-    <script src="js/barChart.js"></script>
+    <script src="js/setOverviewChart.js"></script>
+    <script src="js/setDetailChart.js"></script>
+    <!-- <script src="js/barChart.js"></script> -->
 
     <style>
       body {
@@ -20,6 +21,15 @@
 
       #logo {
         text-align: right;
+      }
+
+      .chartbox {
+        display: flex;
+        flex-direction: row;
+      }
+
+      .chart {
+        flex: 1 300px;
       }
     </style>
   </head>
@@ -59,7 +69,11 @@
     </p>
 
     <!-- <div id="confchart"></div> -->
-    <div id="chart"></div>
+    <div class="chartbox">
+      <div id="overview-chart"></div>
+      <div id="detail-chart"></div>
+    </div>
+    <!-- <div id="chart"></div> -->
     <br/><br/>
     <center>
       <h4>&copy; <a href="https://www.ornl.gov">Oak Ridge National Laboratory</a>
@@ -73,9 +87,11 @@
   </body>
 
   <script>
-    const chartMargin = {top:100, right:20, bottom:20, left:40};
+    const overviewChartMargin = {top:100, right:20, bottom:20, left:40};
+    const detailChartMargin = {top:100, right:20, bottom:20, left:140};
     let chartData;
-    let chart;
+    let overviewChart;
+    let detailChart;
     let confNames;
 
     const nameSearchTextInputHandler = () => {
@@ -161,13 +177,39 @@
       return filteredData;
     }
 
+    const handleOverviewDataQuery = (queryData) => {
+      console.log(queryData);
+      if (detailChart) {
+        detailChart.setData(queryData);
+      }
+    };
+
     const createChart = () => {
       if (chartData) {
         data = loadData();
         // const selectedSortOption = getSelectedSortOption();
         // const nameFilterText = document.getElementById('searchTextField').value;
-        const chartWidth = document.getElementById('chart').clientWidth;
+        const chartWidth = document.getElementById('overview-chart').clientWidth;
 
+        overviewChart = setOverviewChart()
+          .margin(overviewChartMargin)
+          .boxSize(20)
+          // .sortOption(selectedSortOption)
+          .nameValue(d => d.Name)
+          // .setNameFilterStrings(nameFilterText)
+          .setNames(confNames)
+          .setDataQueryHandler(handleOverviewDataQuery);
+        d3.select('#overview-chart').call(overviewChart, data);
+
+        detailChart = setDetailChart()
+          .margin(detailChartMargin)
+          .boxSize(14)
+          // .sortOption(selectedSortOption)
+          .nameValue(d => d.Name)
+          // .setNameFilterStrings(nameFilterText)
+          .setNames(confNames);
+        d3.select('#detail-chart').call(detailChart, data);
+        
         // console.log(data);
         // confChartData = [];
         // confNames.map(confName => {
@@ -188,14 +230,7 @@
         //   .categories(confNames);
         // d3.select('#confchart').call(confChart, confChartData);
 
-        chart = setChart()
-          .margin(chartMargin)
-          .boxSize(20)
-          // .sortOption(selectedSortOption)
-          .nameValue(d => d.Name)
-          // .setNameFilterStrings(nameFilterText)
-          .setNames(confNames);
-        d3.select('#chart').call(chart, data);
+        
       }
     }
 

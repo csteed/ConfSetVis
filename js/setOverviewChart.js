@@ -1,4 +1,4 @@
-var setChart = function () {
+var setOverviewChart = function () {
   let margin = {top:20, right:20, bottom: 20, left: 20};
   let width = 900 - margin.left - margin.right;
   let height = 400 - margin.top - margin.bottom;
@@ -13,9 +13,12 @@ var setChart = function () {
   let filteredData;
   let nameFilterStrings = [];
   let chartDiv;
+  let dataQueryHandler;
 
   let setCountBarChartHeight = 60;
   let cardinalityBarChartWidth = 100;
+
+  let selectedSetPatterns = new Set();
 
   let orders = ({
     Activeness: (a, b) => {
@@ -89,6 +92,7 @@ var setChart = function () {
       }
     });
     console.log(setNames);
+    console.log(data);
     console.log(chartData);
 
     const setsAreEqual = (a, b) => {
@@ -193,7 +197,65 @@ var setChart = function () {
             .selectAll("g")
           .data(setPatterns)
           .join("g")
-            .attr("transform", d => `translate(0, ${y(d.sets)})`);
+            .attr("class", "row")
+            .attr("transform", d => `translate(0, ${y(d.sets)})`)
+          .on("click", d => {
+            console.log(d);
+            // console.log(selectedSetPatterns);
+            // console.log(selectedSetPatterns.findIndex(d));
+            if (selectedSetPatterns.has(d)) {
+              selectedSetPatterns.delete(d);
+              // selectedSetPatterns.splice(selectedSetPatterns.findIndex(d), 1, null);
+            } else {
+              selectedSetPatterns.add(d);
+            }
+
+            row.each( function(d) {
+              console.log(d);
+              d3.select(this).selectAll('rect')
+                .attr('stroke', selectedSetPatterns.has(d) ? "black" : "gray");
+              // if (selectedSetPatterns.has(d)){
+              //   console.log("SELECTED");
+              //   d3.select(this).selectAll('rect')
+              //     .attr('stroke', 'black');
+              // } else {
+              //   console.log("NOT SELECTED");
+              //   d3.select(this).selectAll('rect')
+              //     .attr('stroke', 'gray');
+              // }
+            });
+
+            if (dataQueryHandler) {
+              if (selectedSetPatterns.size > 0) {
+                dataQueryHandler(d3.merge([...selectedSetPatterns].map(d => d.items)));
+              } else {
+                return null;
+              }
+              // console.log(d3.merge([...selectedSetPatterns].map(d => d.items)));
+              // dataQueryHandler([...selectedSetPatterns.values()].map(d => d.items));
+            }
+            // console.log(d3.select(this));
+            // console.log(g.selectAll(".row").selectAll("rect"));
+            // if (selectedSetPatterns.findIndex(d) !== -1) {
+            //   selectedSetPatterns.splice(selectedSetPatterns.findIndex(d), 1, null);
+            // } else {
+              // selectedSetPatterns.push(d);
+            // }
+            // console.log(selectedSetPatterns);
+            // console.log(row.selectAll("rect"))
+            // row.selectAll('rect')
+            //   .each(d => {
+            //     console.log(d);
+
+            //   });
+              // .attr("stroke", d => {
+              //   console.log(d);
+              //   return selectedSetPatterns.has(d) ? 'black' : 'gray';
+              // });
+            // row.selectAll().selectAll("rect")
+            // row.selectAll("rect").selectAll("rect")
+              // .attr("stroke", d => selectedSetPatterns.has(d) ? 'black' : 'gray');
+          });
 
         row.selectAll("rect")
           .data(d => d.sets)
@@ -226,6 +288,7 @@ var setChart = function () {
         
         g.append("g")
           .attr("class", "axis axis--x")
+          .attr("transform", `translate(0,${setCountBarChartHeight})`)
           .call(cardinailtyXAxis);
 
         g.append('g')
@@ -357,6 +420,15 @@ var setChart = function () {
         //     .text((d,i) => `${d} (${setCounts[i]})`);
       }
     }
+  }
+
+  chart.setDataQueryHandler = function(value) {
+    if (!arguments.length) {
+      return dataQueryHandler;
+    }
+
+    dataQueryHandler = value;
+    return chart;
   }
 
   chart.setNameFilterStrings = function(value) {

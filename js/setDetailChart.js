@@ -1,4 +1,4 @@
-var setChart = function () {
+var setDetailChart = function () {
   let margin = {top:20, right:20, bottom: 20, left: 20};
   let width = 900 - margin.left - margin.right;
   let height = 400 - margin.top - margin.bottom;
@@ -237,6 +237,30 @@ var setChart = function () {
 
       drawChart();
     }
+    return chart;
+  }
+
+  chart.setData = function(data) {
+    chartData = data.map(d => {
+      return {
+        name: nameValue(d),
+        sets: setNames.map(s => {
+          return {
+            setName: s,
+            inSet: d[s]
+          }
+        })
+      }
+    });
+    
+    chartData.sort(orders[sortOption]);
+    if (nameFilterStrings.length > 0) {
+      filteredData = chartData.filter(d => isNameFiltered(d.name));
+    } else {
+      filteredData = chartData;
+    }
+
+    drawChart();
     return chart;
   }
 
