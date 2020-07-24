@@ -15,13 +15,10 @@ var setOverviewChart = function () {
   let chartDiv;
   let dataQueryHandler;
 
-  let setCountChartHeight = 60;
-  let patternCountChartWidth = 100;
+  let setCountBarChartHeight = 60;
+  let cardinalityBarChartWidth = 100;
 
   let selectedSetPatterns = new Set();
-
-  let normalColor = '#888';
-  let selectedColor = 'deepskyblue';
 
   let orders = ({
     Activeness: (a, b) => {
@@ -95,9 +92,9 @@ var setOverviewChart = function () {
     //   }
     // });
     chartData = data;
-    // console.log(setNames);
-    // console.log(data);
-    // console.log(chartData);
+    console.log(setNames);
+    console.log(data);
+    console.log(chartData);
 
     const setsAreEqual = (a, b) => {
       if (a.length !== b.length) return false;
@@ -132,9 +129,9 @@ var setOverviewChart = function () {
 
     setPatterns.sort((a,b) => d3.descending(a.intersections, b.intersections));
     // let setPatterns = [...new Set(chartData.map(d => d.sets))];
-    // console.log(setPatterns);
-    // console.log(setNames);
-    // console.log(setCounts);
+    console.log(setPatterns);
+    console.log(setNames);
+    console.log(setCounts);
     // console.log(chartData.map(d => d.sets));
 
     
@@ -156,27 +153,27 @@ var setOverviewChart = function () {
       chartDiv.selectAll('*').remove();
 
       if (setPatterns) {
-        matrixWidth = setNames.length * boxSize;
-        matrixHeight = setPatterns.length * boxSize;
+        width = setNames.length * boxSize;
+        height = setPatterns.length * boxSize;
 
         const svg = chartDiv.append('svg')
-          .attr('width', matrixWidth + patternCountChartWidth + margin.left + margin.right)
-          .attr('height', matrixHeight + setCountChartHeight + margin.top + margin.bottom);
+          .attr('width', width + cardinalityBarChartWidth + margin.left + margin.right)
+          .attr('height', height + setCountBarChartHeight + margin.top + margin.bottom);
         const g = svg.append('g')
           .attr('transform', `translate(${margin.left},${margin.top})`);
 
         const x = d3.scaleBand()
           .domain(setNames)
-          .range([patternCountChartWidth, patternCountChartWidth + matrixWidth]);
+          .range([0, width]);
         
         const y = d3.scaleBand()
           // .domain([...new Set(filteredData.map(d => d.name))])
           .domain([...new Set(setPatterns.map(d => d.sets))])
-          .range([setCountChartHeight, setCountChartHeight + matrixHeight]);
-        // console.log(y.domain());
+          .range([setCountBarChartHeight, setCountBarChartHeight + height]);
+        console.log(y.domain());
         
         const xAxis = g => g
-          .call(d3.axisTop(x).tickPadding(20))
+          .call(d3.axisTop(x))
           .call(g => g.select(".domain").remove())
           .call(g => g.selectAll('.tick text')
             .attr('y', 0)
@@ -237,17 +234,16 @@ var setOverviewChart = function () {
               selectedSetPatterns.add(d);
             }
 
-            // selectors.each( function (d) {
-            //   // console.log(d3.select(this));
-            //   d3.select(this)
-            //     .attr('display', selectedSetPatterns.has(d) ? null : 'none');
-            // });
-
-            row.each( function(d) {
-              d3.select(this).selectAll('rect')
-                .attr('fill', s => s === 0 ? 'white' : selectedSetPatterns.has(d) ? selectedColor : normalColor);
-                // .attr('fill', s => selectedSetPatterns.has(d) ? s => s ? selectedColor : normalColor);
+            selectors.each( function (d) {
+              // console.log(d3.select(this));
+              d3.select(this)
+                .attr('display', selectedSetPatterns.has(d) ? null : 'none');
             });
+
+            // row.each( function(d) {
+            //   d3.select(this).selectAll('rect')
+            //     .attr('stroke', selectedSetPatterns.has(d) ? "black" : "gray");
+            // });
 
             if (dataQueryHandler) {
               // if (selectedSetPatterns.size > 0) {
@@ -265,43 +261,49 @@ var setOverviewChart = function () {
             .attr("x", (s,i) => x(setNames[i]))
             .attr("width", x.bandwidth() - 2)
             .attr("height", y.bandwidth() - 2)
-            .attr("fill", s => s ? normalColor : "white")
+            .attr("fill", s => s ? "deepskyblue" : "white")
             .attr("stroke", "gray")
             .append("title")
               .text((s,i) => `${setNames[i]}, ${s}`);
 
-        // draw count bar chart right of pattern matrix
+        // draw count bar chart
         const barX = d3.scaleLinear()
-          .range([patternCountChartWidth - 8, 0])
+          .range([width + 10, width + cardinalityBarChartWidth])
           .domain([0, d3.max(setPatterns, d => d.items.length)])
           .nice();
         console.log(barX.domain());
 
-        // const cardinailtyXAxis = g => g
-        //   .call(d3.axisTop(barX).ticks(patternCountChartWidth / 30))
-        //   .call(g => g.select(".domain").remove());
-          
-        // g.append("g")
-        //   .attr("class", "axis axis--x")
-        //   .attr("transform", `translate(0,${setCountChartHeight})`)
-        //   .call(cardinailtyXAxis);
+        const cardinailtyXAxis = g => g
+          .call(d3.axisTop(barX).ticks(cardinalityBarChartWidth / 30))
+          .call(g => g.select(".domain").remove());
+          // .call(g => g.selectAll('.tick text')
+          //   .attr('y', 0)
+          //   .attr('x', 10)
+          //   .attr('dy', '0.35em')
+          //   .attr('text-anchor', 'start')
+          //   .attr('transform', 'rotate(-90)'))
+        
+        g.append("g")
+          .attr("class", "axis axis--x")
+          .attr("transform", `translate(0,${setCountBarChartHeight})`)
+          .call(cardinailtyXAxis);
 
         g.append('g')
-          .attr('fill', normalColor)
+          .attr('fill', "deepskyblue")
           .attr('stroke', 'none')
           .selectAll('bin')
           .data(setPatterns)
           .enter().append('rect')
-            .attr('x', d => barX(d.items.length))
+            .attr('x', barX.range()[0])
             .attr('y', d => y(d.sets))
-            .attr('width', d => barX.range()[0] - barX(d.items.length))
+            .attr('width', d => barX(d.items.length) - barX(0))
             .attr('height', y.bandwidth() - 2)
             .append('title')
               .text(d => `${d.sets.map((s,i) => s === 1 ? setNames[i] : null).filter(d => d)}\nn = ${d.items.length}`);
         
         g.append('g')
             .attr('fill', "black")
-            .attr('text-anchor', 'start')
+            .attr('text-anchor', 'end')
             .attr('font-family', 'sans-serif')
             .attr('font-size', 12)
           .selectAll('text')
@@ -310,31 +312,30 @@ var setOverviewChart = function () {
             .attr('x', d => barX(d.items.length))
             .attr('y', d => y(d.sets) + y.bandwidth() / 2)
             .attr('dy', '0.35em')
-            .attr('dx', +4)
+            .attr('dx', -4)
             .text(d => d.items.length)
           .call(text => text.filter(d => barX(d.items.length) - barX(0) < 30)
-            .attr('dx', -4)
+            .attr('dx', +4)
             // .attr('fill', 'black')
-            .attr('text-anchor', 'end'));
+            .attr('text-anchor', 'start'));
 
         // draw set population size bar chart below matrix chart
         const barY = d3.scaleLinear()
-          .range([setCountChartHeight - 8, 14])
+          .range([setCountBarChartHeight - 8, 0])
           .domain([0, d3.max(setCounts)])
           .nice();
           console.log(barY.domain());
   
-        // const setSizeYAxis = g => g
-        //   .call(d3.axisLeft(barY).ticks(setCountChartHeight/14))
-        //   .call(g => g.select(".domain").remove());
+        const setSizeYAxis = g => g
+          .call(d3.axisLeft(barY).ticks(setCountBarChartHeight/14))
+          .call(g => g.select(".domain").remove());
         
-        // g.append("g")
-        //   .attr("class", "axis axis-y")
-        //   .attr("transform", `translate(${patternCountChartWidth}, 0)`)
-        //   .call(setSizeYAxis);
+        g.append("g")
+          .attr("class", "axis axis-y")
+          .call(setSizeYAxis);
 
         g.append('g')
-          .attr('fill', normalColor)
+          .attr('fill', "deepskyblue")
           .attr('stroke', 'none')
           .selectAll('bin')
           .data(setCounts)
@@ -346,51 +347,6 @@ var setOverviewChart = function () {
             .attr('height', d => barY(0) - barY(d))
             .append('title')
               .text((d,i) => `${setNames[i]}\nn = ${d}`);
-        /*
-              const xAxis = g => g
-              .call(d3.axisTop(x))
-              .call(g => g.select(".domain").remove())
-              .call(g => g.selectAll('.tick text')
-                .attr('y', 0)
-                .attr('x', 10)
-                .attr('dy', '0.35em')
-                .attr('text-anchor', 'start')
-                .attr('transform', 'rotate(-90)'))
-            
-            g.append("g")
-              .attr("class", "axis axis--x")
-              .call(xAxis);
-          */
-        g.append('g')
-            .attr('fill', "black")
-            .attr('text-anchor', 'middle')
-            .attr('font-family', 'sans-serif')
-            .attr('font-size', 12)
-            // .attr('transform', 'rotate(-90)')
-          .selectAll('text')
-          .data(setCounts)
-          .join('text')
-            .attr('x', (d,i) => x(setNames[i]) + (x.bandwidth() - 2) / 2)
-            .attr('y', d => barY(d))
-            // .attr('transform', 'rotate(-90)')
-            // .attr('dy', '0.35em')
-            // .attr('dy', '0.35em')
-            .attr('dy', -2)
-            .text(d => d);
-          // .call(text => text.filter(d => barY(d) - barY.range()[1] < 20)
-          //   .attr('dy', 12));
-          //   // .attr('fill', 'black')
-            // .attr('text-anchor', 'start'));
-
-        g.append('text')
-          .attr('text-anchor', 'end')
-          .attr('font-size', 14)
-          .attr('font-family', 'sans-serif')
-          .attr('x', matrixWidth + patternCountChartWidth)
-          .attr('y', -margin.top)
-          .attr('dy', 14)
-          .attr('fill', 'black')
-          .text('Program Committee Intersections');
         /*
         const barY = d3.scaleLinear()
           .range([height + 10, height + setCountBarChartHeight])

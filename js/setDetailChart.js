@@ -3,14 +3,19 @@ var setDetailChart = function () {
   let width = 900 - margin.left - margin.right;
   let height = 400 - margin.top - margin.bottom;
   let boxSize = 14;
+  let cellFillColor = '#FFF';
   
-  let sortOption = 'Activeness';
+  let sortOption = 'Name';
   let nameValue = d => d.name;
   let setNames;
   let chartData;
   let filteredData;
   let nameFilterStrings = [];
   let chartDiv;
+  let setCounts;
+
+  let setCountChartHeight = 60;
+  let chartBuffer = 8;
 
   let orders = ({
     Activeness: (a, b) => {
@@ -77,24 +82,34 @@ var setDetailChart = function () {
   }
 
   function chart(selection, data) {
-    chartData = data.map(d => {
-      return {
-        name: nameValue(d),
-        sets: setNames.map(s => {
-          return {
-            setName: s,
-            inSet: d[s]
-          }
-        })
-      }
-    });
-    
-    chartData.sort(orders[sortOption]);
+    // chartData = data.map(d => {
+    //   return {
+    //     name: nameValue(d),
+    //     sets: setNames.map((s,i) => {
+    //       return {
+    //         setName: s,
+    //         inSet: d.sets[i]
+    //         // inSet: d[s]
+    //       }
+    //     })
+    //   }
+    // });
+    chartData = data;
+    // filteredData = chartData;
+    // chartData.sort(orders[sortOption]);
     if (nameFilterStrings.length > 0) {
       filteredData = chartData.filter(d => isNameFiltered(d.name));
     } else {
       filteredData = chartData;
     }
+
+    setCounts = setNames.map(d => 0);
+    filteredData.map(d => {
+      d.sets.map((d,i) => {
+        setCounts[i] += d;
+      });
+    });
+
     // chartData.sort((a,b) => {
     //   aCardinality = 0;
     //   a.sets.map(d => {
@@ -128,27 +143,22 @@ var setDetailChart = function () {
       chartDiv.selectAll('*').remove();
 
       if (filteredData) {
-        // console.log(filteredData);
-
         width = setNames.length * boxSize;
         height = filteredData.length * boxSize;
 
         const svg = chartDiv.append('svg')
           .attr('width', width + margin.left + margin.right)
-          .attr('height', height + margin.top + margin.bottom);
+          .attr('height', height + setCountChartHeight + margin.top + margin.bottom);
         const g = svg.append('g')
           .attr('transform', `translate(${margin.left},${margin.top})`);
 
         const x = d3.scaleBand()
           .domain(setNames)
-          .range([0, width]);
-          // .padding(1);        
+          .range([0, width]);   
         
         const y = d3.scaleBand()
           .domain([...new Set(filteredData.map(d => d.name))])
-          .range([0, height]);
-          // .padding(1);
-        // console.log(y.domain());
+          .range([setCountChartHeight, setCountChartHeight + height]);
         
         const xAxis = g => g
           .call(d3.axisTop(x))
@@ -165,12 +175,44 @@ var setDetailChart = function () {
           .call(xAxis);
         
         const yAxis = g => g
-          .call(d3.axisLeft(y))
+          .call(d3.axisRight(y))
           .call(g => g.select(".domain").remove());
         
         g.append("g")
           .attr("class", "axis axis-y")
+          .attr("transform", `translate(${width}, 0)`)
           .call(yAxis);
+
+        const setCountY = d3.scaleLinear()
+          .range([setCountChartHeight - chartBuffer, 14])
+          .domain([0, d3.max(setCounts)])
+          .nice();
+
+        g.append('g')
+          .attr('fill', cellFillColor)
+          .attr('stroke', 'none')
+          .selectAll('bin')
+          .data(setCounts)
+          .enter().append('rect')
+            .attr('x', (d,i) => x(setNames[i]))
+            .attr('y', d => setCountY(d))
+            .attr('width', x.bandwidth() - 2)
+            .attr('height', d => setCountY(0) - setCountY(d))
+            .append('title')
+              .text((d,i) => `${setNames[i]}\nn = ${d}`);
+        
+        g.append('g')
+            .attr('fill', 'black')
+            .attr('text-anchor', 'middle')
+            .attr('font-family', 'sans-serif')
+            .attr('font-size', 12)
+          .selectAll('text')
+          .data(setCounts)
+          .join('text')
+            .attr('x', (d,i) => x(setNames[i]) + (x.bandwidth() - 2) / 2)
+            .attr('y', d => setCountY(d))
+            .attr('dy', -2)
+            .text(d => d);
 
         // const dotData = d3.merge(chartData.map(d => {
         //   return setNames.map(setName => {
@@ -199,14 +241,23 @@ var setDetailChart = function () {
           .data(d => d.sets)
           .join("rect")
             .attr("rx", 5)
-            .attr("x", s => x(s.setName))
+            .attr("x", (s,i) => x(setNames[i]))
             .attr("width", x.bandwidth() - 2)
             .attr("height", y.bandwidth() - 2)
-            .attr("fill", s => s.inSet ? "deepskyblue" : "white")
-            .attr("stroke", "gray")
-            .append("title")
-              .text(s => `${s.setName}, ${s.inSet}`);
+            .attr("fill", s => s ? cellFillColor : "white")
+            .attr("stroke", "gray");
+            // .append("title")
+            //   .text(s => `${s.setName}, ${s.inSet}`);
 
+        g.append('text')
+          .attr('text-anchor', 'start')
+          .attr('font-size', 14)
+          .attr('font-family', 'sans-serif')
+          .attr('x', 0)
+          .attr('y', -margin.top)
+          .attr('dy', 14)
+          .attr('fill', 'black')
+          .text('Program Committee Details');
       }
     }
   }
@@ -241,17 +292,20 @@ var setDetailChart = function () {
   }
 
   chart.setData = function(data) {
-    chartData = data.map(d => {
-      return {
-        name: nameValue(d),
-        sets: setNames.map(s => {
-          return {
-            setName: s,
-            inSet: d[s]
-          }
-        })
-      }
-    });
+    // chartData = data.map(d => {
+    //   return {
+    //     name: nameValue(d),
+    //     sets: setNames.map((s,i) => {
+    //       return {
+    //         setName: s,
+    //         inSet: d.sets[i]
+    //         // inSet: d[s]
+    //       }
+    //     })
+    //   }
+    // });
+    chartData = data;
+    console.log(chartData);
     
     chartData.sort(orders[sortOption]);
     if (nameFilterStrings.length > 0) {
@@ -260,6 +314,22 @@ var setDetailChart = function () {
       filteredData = chartData;
     }
 
+    setCounts = setNames.map(d => 0);
+    filteredData.map(d => {
+      d.sets.map((d,i) => {
+        setCounts[i] += d;
+      });
+    });
+
+    drawChart();
+    return chart;
+  }
+
+  chart.cellFillColor = function(value) {
+    if (!arguments.length) {
+      return cellFillColor;
+    }
+    cellFillColor = value;
     drawChart();
     return chart;
   }

@@ -87,8 +87,8 @@
   </body>
 
   <script>
-    const overviewChartMargin = {top:100, right:20, bottom:20, left:40};
-    const detailChartMargin = {top:100, right:20, bottom:20, left:140};
+    const overviewChartMargin = {top:120, right:40, bottom:20, left:40};
+    const detailChartMargin = {top:120, right:140, bottom:20, left:20};
     let chartData;
     let overviewChart;
     let detailChart;
@@ -108,7 +108,7 @@
       for (let i = select.options.length; i >= 0; i--) {
         select.remove(i);
       }
-      const years = [...new Set(chartData.map(d => d.Year))].sort(d3.descending);
+      const years = [...new Set(chartData.map(d => d.year))].sort(d3.descending);
       // console.log(years);
       select.options[0] = new Option('All Years');
       years.map(d => {
@@ -132,36 +132,32 @@
     }
     
     const sortOptionSelectChanged = () => {
-      // console.log('sort options CHANGED');
       let sortOption = getSelectedSortOption();
-      // sortOption = sortOption === 'Conference' ? 'Set' : sortOption;
       chart.sortOption(sortOption);
     }
 
     const loadData = () => {
       let selectedYear = getSelectedYear();
-      // console.log(selectedYear);
       let filteredData;
       if (selectedYear === 'All Years') {
         // merge names for multiple years into a single entry for each name
-        const names = [...new Set(chartData.map(d => d.Name))];
+        const names = [...new Set(chartData.map(d => d.name))];
         // console.log(names);
         filteredData = names.map(name => {
-          nameItems = chartData.filter(d => d.Name === name);
-          if (name.search("Ethan") !== -1) { 
-            console.log(nameItems);
-            // console.log(mergedItem);
-          }
+          nameItems = chartData.filter(d => d.name === name);
           if (nameItems.length > 1) {
             let mergedItem = {
-              Name: name
+              name: name,
+              sets: confNames.map(d => 0)
             };
-            confNames.map(confName => {
+            confNames.map((confName, i) => {
               nameItems.map(item => {
-                mergedItem[confName] = mergedItem[confName] === 1 || item[confName] === 1 ? 1 : 0;
+                mergedItem.sets[i] = mergedItem.sets[i] === 1 || item.sets[i] === 1 ? 1 : 0;
+                // mergedItem[confName] = mergedItem[confName] === 1 || item[confName] === 1 ? 1 : 0;
               });
             });
-            
+            // console.log(nameItems);
+            // console.log(mergedItem);
             return mergedItem;
           } else {
             return nameItems[0];
@@ -170,9 +166,9 @@
       } else {
         // filter based on current selected year
         selectedYear = +selectedYear;
-        filteredData = chartData.filter(d => d.Year === selectedYear);
+        filteredData = chartData.filter(d => d.year === selectedYear);
       }
-      // console.log(filteredData);
+      console.log(filteredData);
       
       return filteredData;
     }
@@ -180,7 +176,15 @@
     const handleOverviewDataQuery = (queryData) => {
       console.log(queryData);
       if (detailChart) {
-        detailChart.setData(queryData);
+        if (queryData.length === 0) {
+          // detailChart.setData([]);
+          detailChart.cellFillColor('#888')
+          detailChart.setData(loadData());
+        } else {
+          detailChart.cellFillColor("deepskyblue")
+          detailChart.setData(queryData);
+        }
+        // detailChart.setData(queryData.length > 0 ? queryData : loadData());
       }
     };
 
@@ -193,9 +197,9 @@
 
         overviewChart = setOverviewChart()
           .margin(overviewChartMargin)
-          .boxSize(20)
+          .boxSize(18)
           // .sortOption(selectedSortOption)
-          .nameValue(d => d.Name)
+          .nameValue(d => d.name)
           // .setNameFilterStrings(nameFilterText)
           .setNames(confNames)
           .setDataQueryHandler(handleOverviewDataQuery);
@@ -203,9 +207,10 @@
 
         detailChart = setDetailChart()
           .margin(detailChartMargin)
-          .boxSize(14)
+          .boxSize(18)
+          .cellFillColor('#888')
           // .sortOption(selectedSortOption)
-          .nameValue(d => d.Name)
+          .nameValue(d => d.name)
           // .setNameFilterStrings(nameFilterText)
           .setNames(confNames);
         d3.select('#detail-chart').call(detailChart, data);
@@ -239,8 +244,16 @@
         // console.log(data);
         confNames = data.columns.filter(d => d !== 'Name' && d !== 'Year')
         // console.log(confNames);
-        chartData = data;
+        chartData = data.map(d => {
+          return {
+            name: d.Name,
+            year: d.Year,
+            sets: confNames.map(s => d[s])
+          }
+        });
+        // chartData = data;
         // chartData = data.filter(d => d.Year === 2020);
+        console.log(data);
         console.log(chartData);
         // columnCategories = new Map();
         // // data = data.filter(d => d.Year === 2020)
