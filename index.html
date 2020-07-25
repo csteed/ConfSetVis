@@ -38,7 +38,7 @@
       <tr>
         <td>
           <h2>Visual Analysis of Program Committee Service for Selected Conferences</h2>
-          <strong>Data:</strong> <a download href="data/confPC_v3.csv">confPC_v3.csv</a><br/><br/>
+          <strong>Data:</strong> <a download href="data/confPC_v4.csv">confPC_v4.csv</a><br/><br/>
 
           <strong>Author:</strong> <a href="https://csteed.com" target="_blank">Chad A. Steed</a>, <a href="https://vis.ornl.gov" target="_blank">VISTA Lab</a>, <a href="https://www.ornl.gov/division/csmd" target="_blank">Computer Science and Mathematics Division</a>, <a href="https://ornl.gov" target="_blank">Oak Ridge National Laboratory</a>
           <br/>
@@ -239,7 +239,7 @@
       }
     }
 
-    d3.csv("data/confPC_v3.csv", d3.autoType)
+    d3.csv("data/confPC_v4.csv", d3.autoType)
       .then(data => {
         // console.log(data);
         confNames = data.columns.filter(d => d !== 'Name' && d !== 'Year')
