@@ -4,11 +4,13 @@
   <head>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://d3js.org/d3-array.v2.min.js"></script>
-    <script src="js/chordChart.js"></script>
+    <script src="js/setOverviewChart.js"></script>
+    <script src="js/setDetailChart.js"></script>
+    <!-- <script src="js/barChart.js"></script> -->
 
     <style>
       body {
-        font: .8rem sans-serif;
+        font: 0.8rem sans-serif;
         margin: 4px 20px 0px 20px;
         background-color: white;
       }
@@ -71,9 +73,11 @@
     </p>
 
     <!-- <div id="confchart"></div> -->
-    <!-- <div class="chartbox"> -->
-      <div id="chart"></div>
-    <!-- </div> -->
+    <div class="chartbox">
+      <div id="overview-chart"></div>
+      <div id="detail-chart"></div>
+    </div>
+    <!-- <div id="chart"></div> -->
     <br/><br/>
     <center>
       <h4>&copy; <a href="https://www.ornl.gov">Oak Ridge National Laboratory</a>
@@ -87,7 +91,8 @@
   </body>
 
   <script>
-    const chartMargin = {top:10, right:10, bottom:10, left:10};
+    const overviewChartMargin = {top:120, right:40, bottom:20, left:40};
+    const detailChartMargin = {top:120, right:140, bottom:20, left:20};
     let chartData;
     let overviewChart;
     let detailChart;
@@ -167,31 +172,9 @@
         selectedYear = +selectedYear;
         filteredData = chartData.filter(d => d.year === selectedYear);
       }
-      // console.log(filteredData);
-
-      const chordData = confNames.map((confName, i) => {
-        // console.log(confName);
-
-        const confData = filteredData.filter(d => d.sets[i] === 1);
-        // console.log(confData);
-
-        const counts = confNames.map((d,j) => {
-          return confData.filter(d => d.sets[j] === 1).length;
-        })
-        // console.log(counts);
-
-        return counts.map((c,j) => {
-          return {
-            source: confName,
-            target: confNames[j],
-            value: confName !== confNames[j] ? c : 0
-          };
-        });
-      });
-
-      return d3.merge(chordData);
+      console.log(filteredData);
       
-      // return filteredData;
+      return filteredData;
     }
 
     const handleOverviewDataQuery = (queryData) => {
@@ -212,36 +195,29 @@
     const createChart = () => {
       if (chartData) {
         data = loadData();
-        // console.log(data);
         // const selectedSortOption = getSelectedSortOption();
         // const nameFilterText = document.getElementById('searchTextField').value;
-        const chartWidth = document.getElementById('chart').clientWidth;
-        console.log(chartWidth);
-        let chart = chordChart()
-          .width(chartWidth)
-          .height(chartWidth)
-          .margin(chartMargin);
+        const chartWidth = document.getElementById('overview-chart').clientWidth;
 
-        d3.select('#chart').call(chart, data);
-        // overviewChart = setOverviewChart()
-        //   .margin(overviewChartMargin)
-        //   .boxSize(18)
-        //   // .sortOption(selectedSortOption)
-        //   .nameValue(d => d.name)
-        //   // .setNameFilterStrings(nameFilterText)
-        //   .setNames(confNames)
-        //   .setDataQueryHandler(handleOverviewDataQuery);
-        // d3.select('#overview-chart').call(overviewChart, data);
+        overviewChart = setOverviewChart()
+          .margin(overviewChartMargin)
+          .boxSize(18)
+          // .sortOption(selectedSortOption)
+          .nameValue(d => d.name)
+          // .setNameFilterStrings(nameFilterText)
+          .setNames(confNames)
+          .setDataQueryHandler(handleOverviewDataQuery);
+        d3.select('#overview-chart').call(overviewChart, data);
 
-        // detailChart = setDetailChart()
-        //   .margin(detailChartMargin)
-        //   .boxSize(18)
-        //   .cellFillColor('#888')
-        //   // .sortOption(selectedSortOption)
-        //   .nameValue(d => d.name)
-        //   // .setNameFilterStrings(nameFilterText)
-        //   .setNames(confNames);
-        // d3.select('#detail-chart').call(detailChart, data);
+        detailChart = setDetailChart()
+          .margin(detailChartMargin)
+          .boxSize(18)
+          .cellFillColor('#888')
+          // .sortOption(selectedSortOption)
+          .nameValue(d => d.name)
+          // .setNameFilterStrings(nameFilterText)
+          .setNames(confNames);
+        d3.select('#detail-chart').call(detailChart, data);
         
         // console.log(data);
         // confChartData = [];
@@ -281,8 +257,8 @@
         });
         // chartData = data;
         // chartData = data.filter(d => d.Year === 2020);
-        // console.log(data);
-        // console.log(chartData);
+        console.log(data);
+        console.log(chartData);
         // columnCategories = new Map();
         // // data = data.filter(d => d.Year === 2020)
         // // console.log(data);

@@ -2,83 +2,56 @@
 <meta charset="utf-8" />
 <html>
   <head>
-    <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script src="https://d3js.org/d3-array.v2.min.js"></script>
-    <script src="js/setOverviewChart.js"></script>
-    <script src="js/setDetailChart.js"></script>
-    <!-- <script src="js/barChart.js"></script> -->
-
     <style>
       body {
-        font: 1rem sans-serif;
-        margin: 4px 20px 0px 20px;
+        font: 12px sans-serif;
+        /* margin: 4px 20px 0px 20px; */
+        /* background: gray; */
         background-color: white;
+      }
+
+      .top {
+        background-color: whitesmoke;
+        overflow: hidden;
+        position: fixed;
+        top: 0;
+        width: 100%;
+      }
+
+      .main {
+        margin-top: 200px;
+      }
+
+      #links img {
+        border: 2px solid #999;
+        border-radius: 8px;
+        margin: 10px 10px;
+        box-shadow: 2px 2px 18px rgb(82, 81, 81);
       }
 
       table {
         width: 100%;
       }
 
-      #logo {
+      #logo img{
         text-align: right;
-      }
-
-      .chartbox {
-        display: flex;
-        flex-direction: row;
-      }
-
-      .chart {
-        flex: 1 300px;
       }
     </style>
   </head>
   <body>
-    <table>
-      <tr>
-        <td>
-          <h2>Visual Analysis of Program Committee Service for Selected Conferences</h2>
-          <strong>Data:</strong> <a download href="data/confPC_v5.csv">confPC_v5.csv</a><br/><br/>
+    <center>
+      <br/>
+      <h2>Visual Analysis of Conference Program Committee Overlap</h2>
+      <p id="links">
+        <br/><br/>
+        <a href="./sets.html" alt="Set Intersection Chart"><img class="link" src="img/sets-thumb.png" height=200></img></a>
+        <a href="./chord.html" alt="Chord Chart"><img class="link" src="img/chord-thumb.png" height=200></img></a>
+      </p>
 
-          <strong>Author:</strong> <a href="https://csteed.com" target="_blank">Chad A. Steed</a>, <a href="https://vis.ornl.gov" target="_blank">VISTA Lab</a>, <a href="https://www.ornl.gov/division/csmd" target="_blank">Computer Science and Mathematics Division</a>, <a href="https://ornl.gov" target="_blank">Oak Ridge National Laboratory</a>
-          <br/>
-          <strong>Collaborators:</strong><br/>
-          &nbsp;&nbsp;<a href="https://www.ornl.gov/staff-profile/erik-h-schmidt" target="_blank">Erik Schmidt (ORNL)</a><br/>
-          &nbsp;&nbsp;<a href="https://coe.northeastern.edu/people/tiwari-devesh/" target="_blank">Devesh Tiwari (Notheastern)</a><br/>
-          &nbsp;&nbsp;<a href="http://dasha.tech/" target="_blank">Dasha Herrmannova (ORNL)</a><br/>
-          &nbsp;&nbsp;<a href="https://www.ornl.gov/staff-profile/arthur-b-maccabe" target="_blank">Arthur "Barney" Maccabe (ORNL)</a>
-        </td>
-
-        <td id="logo"><a href="https://vis.ornl.gov/" target="_blank"><img src="img/vista-logo.png" height=70 alt="ORNL VISTA Vis Lab"></img></a></td>
-      </tr>
-    </table>
-    <h3>Chart Controls:</h3>
-    <p>
-      <label for="yearSelect">Year: </label>
-      <select id="yearSelect" onChange="yearSelectChanged()"></select>
-      <br/><br/>
-
-      <!-- <label for="sortOptionSelect">Sorting Option: </label>
-      <select id="sortOptionSelect" onChange="sortOptionSelectChanged()">
-        <option selected>Activeness</option>
-        <option>Conference</option>
-        <option>Name</option>
-      </select>
-      <br/><br/>
-
-      <label for="searchTextField">Filter by Name: </label>
-      <input id="searchTextField" type="text"></input>
-      <label>(partial name search; use commas for multiple names)</label>
-      <br/><br/> -->
-    </p>
-
-    <!-- <div id="confchart"></div> -->
-    <div class="chartbox">
-      <div id="overview-chart"></div>
-      <div id="detail-chart"></div>
-    </div>
-    <!-- <div id="chart"></div> -->
-    <br/><br/>
+      <div id="logo">
+        <a href="https://vis.ornl.gov/" target="_blank"><img src="img/vista-logo.png" height=70 alt="ORNL VISTA Vis Lab"></img></a>
+      </div>
+    </center>
     <center>
       <h4>&copy; <a href="https://www.ornl.gov">Oak Ridge National Laboratory</a>
           <script type="text/javascript">
@@ -86,228 +59,5 @@
           </script>
       </h4>
     </center>
-    <br/>
-    <br/>
   </body>
-
-  <script>
-    const overviewChartMargin = {top:120, right:40, bottom:20, left:40};
-    const detailChartMargin = {top:120, right:140, bottom:20, left:20};
-    let chartData;
-    let overviewChart;
-    let detailChart;
-    let confNames;
-
-    const nameSearchTextInputHandler = () => {
-      if (chart) {
-        const textValue = document.getElementById('searchTextField').value;
-        chart.setNameFilterStrings(textValue);
-      }
-    };
-
-    // document.getElementById('searchTextField').addEventListener('input', nameSearchTextInputHandler);
-
-    const populateYearSelect = () => {
-      const select = document.getElementById('yearSelect');
-      for (let i = select.options.length; i >= 0; i--) {
-        select.remove(i);
-      }
-      const years = [...new Set(chartData.map(d => d.year))].sort(d3.descending);
-      // console.log(years);
-      select.options[0] = new Option('All Years');
-      years.map(d => {
-        select.options[select.options.length] = new Option(d);
-      });
-    };
-
-    const getSelectedYear = () => {
-      const select = document.getElementById('yearSelect');
-      return select.options[select.selectedIndex].text;
-    }
-
-    const yearSelectChanged = () => {
-      createChart();
-    };
-
-    const getSelectedSortOption = () => {
-      const select = document.getElementById('sortOptionSelect');
-      let option = select.options[select.selectedIndex].text;
-      return option === 'Conference' ? 'Set' : option;
-    }
-    
-    const sortOptionSelectChanged = () => {
-      let sortOption = getSelectedSortOption();
-      chart.sortOption(sortOption);
-    }
-
-    const loadData = () => {
-      let selectedYear = getSelectedYear();
-      let filteredData;
-      if (selectedYear === 'All Years') {
-        // merge names for multiple years into a single entry for each name
-        const names = [...new Set(chartData.map(d => d.name))];
-        // console.log(names);
-        filteredData = names.map(name => {
-          nameItems = chartData.filter(d => d.name === name);
-          if (nameItems.length > 1) {
-            let mergedItem = {
-              name: name,
-              sets: confNames.map(d => 0)
-            };
-            confNames.map((confName, i) => {
-              nameItems.map(item => {
-                mergedItem.sets[i] = mergedItem.sets[i] === 1 || item.sets[i] === 1 ? 1 : 0;
-                // mergedItem[confName] = mergedItem[confName] === 1 || item[confName] === 1 ? 1 : 0;
-              });
-            });
-            // console.log(nameItems);
-            // console.log(mergedItem);
-            return mergedItem;
-          } else {
-            return nameItems[0];
-          }
-        });
-      } else {
-        // filter based on current selected year
-        selectedYear = +selectedYear;
-        filteredData = chartData.filter(d => d.year === selectedYear);
-      }
-      console.log(filteredData);
-      
-      return filteredData;
-    }
-
-    const handleOverviewDataQuery = (queryData) => {
-      console.log(queryData);
-      if (detailChart) {
-        if (queryData.length === 0) {
-          // detailChart.setData([]);
-          detailChart.cellFillColor('#888')
-          detailChart.setData(loadData());
-        } else {
-          detailChart.cellFillColor("deepskyblue")
-          detailChart.setData(queryData);
-        }
-        // detailChart.setData(queryData.length > 0 ? queryData : loadData());
-      }
-    };
-
-    const createChart = () => {
-      if (chartData) {
-        data = loadData();
-        // const selectedSortOption = getSelectedSortOption();
-        // const nameFilterText = document.getElementById('searchTextField').value;
-        const chartWidth = document.getElementById('overview-chart').clientWidth;
-
-        overviewChart = setOverviewChart()
-          .margin(overviewChartMargin)
-          .boxSize(18)
-          // .sortOption(selectedSortOption)
-          .nameValue(d => d.name)
-          // .setNameFilterStrings(nameFilterText)
-          .setNames(confNames)
-          .setDataQueryHandler(handleOverviewDataQuery);
-        d3.select('#overview-chart').call(overviewChart, data);
-
-        detailChart = setDetailChart()
-          .margin(detailChartMargin)
-          .boxSize(18)
-          .cellFillColor('#888')
-          // .sortOption(selectedSortOption)
-          .nameValue(d => d.name)
-          // .setNameFilterStrings(nameFilterText)
-          .setNames(confNames);
-        d3.select('#detail-chart').call(detailChart, data);
-        
-        // console.log(data);
-        // confChartData = [];
-        // confNames.map(confName => {
-        //   let confParticipants = data.filter(d => d[confName]);
-        //   confChartData.push({
-        //     conference: confName,
-        //     count: confParticipants.length
-        //   });
-        // });
-        // console.log(confChartData);
-
-        // let confChart = barChart()
-        //   .margin(chartMargin)
-        //   .width(chartWidth)
-        //   .height(confNames.length * 40)
-        //   .categoryValue(d => d.conference)
-        //   .barValue(d => d.count)
-        //   .categories(confNames);
-        // d3.select('#confchart').call(confChart, confChartData);
-
-        
-      }
-    }
-
-    d3.csv("data/confPC_v5.csv", d3.autoType)
-      .then(data => {
-        // console.log(data);
-        confNames = data.columns.filter(d => d !== 'Name' && d !== 'Year')
-        // console.log(confNames);
-        chartData = data.map(d => {
-          return {
-            name: d.Name,
-            year: d.Year,
-            sets: confNames.map(s => d[s])
-          }
-        });
-        // chartData = data;
-        // chartData = data.filter(d => d.Year === 2020);
-        console.log(data);
-        console.log(chartData);
-        // columnCategories = new Map();
-        // // data = data.filter(d => d.Year === 2020)
-        // // console.log(data);
-
-        // data.columns.forEach(column => {
-        //   if (column !== 'Name') {
-        //     let conf = column.substring(0, column.indexOf(','));
-        //     console.log(conf);
-        //     let confColumns = columnCategories.get(conf);
-        //     if (!confColumns) {
-        //       confColumns = [];
-        //       columnCategories.set(conf, confColumns);
-        //     }
-        //     confColumns.push(column);
-        //   }
-        // });
-        // console.log(columnCategories);
-        // console.log(columnCategories.keys());
-
-        // chartData = [];
-        // data.forEach(d => {
-        //   confRollups = new Map();
-        //   columnCategories.forEach((value, key) => {
-        //     let inConf = false;
-        //     value.forEach(v => {
-        //       if (d[v] === 1) {
-        //         inConf = true;
-        //       }
-        //     });
-        //     confRollups.set(key, inConf);
-        //     // console.log(`key: ${key}  value: ${value}`);
-        //   });
-        //   chartDatum = {Name: d.Name}
-        //   // console.log(confRollups);
-        //   confRollups.forEach((value, key) => {
-        //     chartDatum[key] = value;
-        //   })
-        //   chartData.push(chartDatum);
-        // })
-        // // chartData = data;
-        // confNames = [...columnCategories.keys()];
-        // console.log(confNames);
-        // console.log(chartData);
-        populateYearSelect();
-        createChart();
-      })
-      .catch(error => {
-        console.log(error);
-      })
-
-  </script>
 </html>

@@ -9,6 +9,11 @@ var chordChart = function () {
   let names;
   let matrix;
 
+  let confStrokeColor = "#778899";
+  let interStrokeColor = "lightgray";
+  let interStrokeHighlightColor = '#3182bd';
+  let fadeOpacity = 0.2;
+
   function chart(selection, data) {
     _chartData = data.slice();
     _chartDiv = selection;
@@ -34,7 +39,7 @@ var chordChart = function () {
           .attr('height', height + margin.top + margin.bottom);
         
         const g = svg.append('g')
-          .attr('transform', `translate(${margin.left + width / 2}, ${margin.top + height / 2})`);
+          .attr('transform', `translate(${margin.left + (width / 2)}, ${margin.top + (height / 2)})`);
 
         const outerRadius = Math.min(width, height) * 0.5;
         const innerRadius = outerRadius - 124;
@@ -51,7 +56,8 @@ var chordChart = function () {
         const ribbon = d3.ribbon()
           .radius(innerRadius);
 
-        const color = d3.scaleSequential(d3.interpolateBlues).domain([0, d3.max(_chartData.map(d => d.value))]);
+        // const color = d3.scaleSequential(d3.interpolateBlues).domain([0, d3.max(_chartData.map(d => d.value))]);
+        const color = d3.scaleSequentialSqrt([0, d3.max(_chartData.map(d => d.value))], t => d3.interpolateBlues((t * .75 + 0.15)));
 
         const chords = chord(matrix);
         // console.log(chords);
@@ -63,11 +69,14 @@ var chordChart = function () {
           .data(chords.groups)
           .enter().append("g");
 
+        // outer conference paths
         group.append("path")
           .attr("class", d => `conf ${names[d.index]}`)
-          .attr('fill', '#deebf7')
+          .attr('fill', '#C0C0C0')
+          // .attr('fill', '#deebf7')
           // .attr('stroke', '#3182bd')
-          .attr('stroke', '#AAA')
+          // .attr('stroke', '#778899')
+          .attr('stroke', confStrokeColor)
           .attr('d', arc);
 
         group.append("text")
@@ -80,6 +89,7 @@ var chordChart = function () {
           .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
           .text(d => names[d.index]);
           
+        // inner intersection paths
         g.append("g")
             .attr("fill-opacity", 0.5)
           .selectAll("path")
@@ -89,8 +99,9 @@ var chordChart = function () {
               return `intersection ${names[d.source.index]} ${names[d.target.index]}`
             })
             // .attr('stroke', '#3182bd')
-            .attr('stroke', '#AAA')
+            .attr('stroke', interStrokeColor)
             .attr('fill', d => color(d.source.value))
+            .style("mix-blend-mode", "multiply")
             // .attr('fill', d => (color(Math.abs(d.source.value - d.target.value) / maxDiff)))
             .attr('d', ribbon);
                     
@@ -99,35 +110,52 @@ var chordChart = function () {
           .style('text-anchor', 'middle')
           .style('text-weight', 'bold')
           .style('font-size', 14)
-          .style('text-shadow', '0 3px 0 #eee, 3px 0 0 #fff, 0 -3px 0 #eee, -3px 0 0 #eee')
+          .style('text-shadow', '0 2px 0 #eee, 2px 0 0 #fff, 0 -2px 0 #eee, -2px 0 0 #eee')
           .html('Hover over a chord or conference to display information');
 
         g.selectAll('path.intersection')
           .on('mouseover', function(d) {
             d3.selectAll('path')
-              .transition().duration(200).attr('opacity', 0.2);
+              .transition().duration(200).attr('opacity', fadeOpacity);
             d3.select(this)
-              .transition().duration(200).attr('opacity', 1);
+              .transition().duration(200)
+                .attr('opacity', 1);
+            //     .attr('stroke', interStrokeHighlightColor);
+                // .attr('stroke', '#3182bd');
             d3.select('.textbox')
-              // .html('tee hee hee');
               .html(`${names[d.source.index]} and ${names[d.target.index]} had ${d.source.value} shared PC members`);
-            // console.log(d);
           })
           .on('mouseout', function(d) {
-            d3.selectAll('path').transition().duration(200).attr('opacity', 1);
+            d3.selectAll('path')
+              .transition().duration(200)
+                .attr('opacity', 1);
+            // d3.selectAll('path.intersection')
+            //   .transition().duration(200)
+            //   .attr('stroke', "#000");
+            // d3.selectAll('path.intersection')
+            //   .transition().duration(200)
+            //     .attr('stroke', 'lightgray');
             d3.selectAll('text.intersection').transition().duration(200).attr('opacity', 0);
             d3.select('.textbox').html('Hover over a chord or conference to display information');
-            // console.log(d);
           });
         
         g.selectAll('path.conf')
           .on('mouseover', function(d) {
-            d3.selectAll('path').transition().duration(200).attr('opacity', 0.2);
-            d3.selectAll(`.${names[d.index]}`).transition().duration(200).attr('opacity', 1);
+            d3.selectAll('path')
+              .transition().duration(200)
+                .attr('opacity', fadeOpacity);
+            d3.selectAll(`.${names[d.index]}`)
+              .transition().duration(200)
+                .attr('opacity', 1);
             d3.select('.textbox').html(`${names[d.index]} had ${d3.sum(matrix[d.index])} PC members on the PC of other conferences`);
           })
           .on('mouseout', function(d) {
-            d3.selectAll('path').transition().duration(200).attr('opacity', 1)
+            d3.selectAll('path')
+              .transition().duration(200)
+                .attr('opacity', 1);
+            // d3.selectAll('path.intersection')
+            //   .transition().duration(200)
+            //     .attr('stroke', 'lightgray');
             d3.select('.textbox').html('Hover over a chord or conference for display information');
           });
       }
