@@ -42,7 +42,7 @@ var chordChart = function () {
           .attr('transform', `translate(${margin.left + (width / 2)}, ${margin.top + (height / 2)})`);
 
         const outerRadius = Math.min(width, height) * 0.5;
-        const innerRadius = outerRadius - 124;
+        const innerRadius = outerRadius - 20;
 
         const chord = d3.chord()
           .padAngle(.03)
@@ -51,7 +51,7 @@ var chordChart = function () {
 
         const arc = d3.arc()
           .innerRadius(innerRadius)
-          .outerRadius(innerRadius + 20);
+          .outerRadius(outerRadius);
 
         const ribbon = d3.ribbon()
           .radius(innerRadius);
@@ -64,30 +64,71 @@ var chordChart = function () {
         // const maxDiff = chords.map(d => d.source.value - d.target.value).reduce((t,v) => Math.max(t,v),0);
         // console.log(maxDiff);
 
+        g.append("path")
+          .attr("id", "_textpath_")
+          .attr("fill", "none")
+          .attr("d", d3.arc()({outerRadius, startAngle: 0, endAngle: 2 * Math.PI}));
+
         const group = g.append("g")
           .selectAll("g")
           .data(chords.groups)
           .enter().append("g");
 
         // outer conference paths
-        group.append("path")
-          .attr("class", d => `conf ${names[d.index]}`)
-          .attr('fill', '#C0C0C0')
-          // .attr('fill', '#deebf7')
-          // .attr('stroke', '#3182bd')
-          // .attr('stroke', '#778899')
-          .attr('stroke', confStrokeColor)
-          .attr('d', arc);
+        g.append("g")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", 11)
+            .attr("font-weight", "bold")
+          .selectAll("g")
+          .data(chords.groups)
+          .join("g")
+            .call(g => g.append("path")
+              .attr("d", arc)
+              .attr("class", d => `conf ${names[d.index]}`)
+              .attr("fill", '#C0C0C0')
+              .attr("stroke", confStrokeColor))
+            .call(g => g.append("text")
+              .attr("dy", -3)
+            .append("textPath")
+              // .attr("xlink:href", (d,i) => `#conf_${names[d.index]}`)
+              .attr("xlink:href", '#_textpath_')
+              .attr("startOffset", d => d.startAngle * outerRadius)
+              .text(d => names[d.index]));
+            
+        // group.append("path")
+        //   .attr("class", d => `conf ${names[d.index]}`)
+        //   .attr('fill', '#C0C0C0')
+        //   // .attr('fill', '#deebf7')
+        //   // .attr('stroke', '#3182bd')
+        //   // .attr('stroke', '#778899')
+        //   .attr('stroke', confStrokeColor)
+        //   .attr('d', arc);
+        
+        // group.append("text")
+        //   .attr("dy", -3)
+        //   .append("textPath")
+        //     .attr("startOffset", d => d.startAngle * outerRadius)
+        //     .text(d => names[d.index]);
 
-        group.append("text")
-          .each(d => { d.angle = (d.startAngle + d.endAngle) / 2; })
-          .attr("dy", ".35em")
-          .attr("transform", d => `
-            rotate(${(d.angle * 180 / Math.PI - 90)})
-            translate(${innerRadius + 26})
-            ${d.angle > Math.PI ? "rotate(180)" : ""}`)
-          .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
-          .text(d => names[d.index]);
+        // group.append("text")
+        //   .each(d => { d.angle = (d.startAngle + d.endAngle) / 2; })
+        //   .attr("dy", ".35em")
+        //   .attr("transform", d => `
+        //     rotate(${(d.angle * 180 / Math.PI - 90)})
+        //     translate(${innerRadius + 26})
+        //     ${d.angle > Math.PI ? "rotate(180)" : ""}`)
+        //   .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
+        //   .text(d => names[d.index]);
+
+        // group.append("text")
+        //   .each(d => { d.angle = (d.startAngle + d.endAngle) / 2; })
+        //   .attr("dy", ".35em")
+        //   .attr("transform", d => `
+        //     rotate(${(d.angle * 180 / Math.PI - 90)})
+        //     translate(${innerRadius + 26})
+        //     ${d.angle > Math.PI ? "rotate(180)" : ""}`)
+        //   .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
+        //   .text(d => names[d.index]);
           
         // inner intersection paths
         g.append("g")
